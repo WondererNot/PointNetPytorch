@@ -1,107 +1,69 @@
-# Pytorch Implementation of PointNet and PointNet++ 
+# PointNet in PyTorch
 
-This repo is implementation for [PointNet](http://openaccess.thecvf.com/content_cvpr_2017/papers/Qi_PointNet_Deep_Learning_CVPR_2017_paper.pdf) and [PointNet++](http://papers.nips.cc/paper/7095-pointnet-deep-hierarchical-feature-learning-on-point-sets-in-a-metric-space.pdf) in pytorch.
+This is a PyTorch re-implementation of PointNet according to the specifications laid out in the paper with two minor differences:
 
-## Update
-**2019/11/26:**
+ * I exclude the adaptive batch normalization decay rate
+ * The trained model provided operates on pointclouds with 2000 points as opposed to 2048 (although you can re-train and change the pointcloud sizes)
 
-(1) Fixed some errors in previous codes and added data augmentation tricks. Now classification by only 1024 points can achieve 92.8\%! 
+### Other Implementations
+ * The official TensorFlow implementation from the authors can be found [here](https://github.com/charlesq34/pointnet).
+ * Another PyTorch re-implementation can be found [here](https://github.com/fxia22/pointnet.pytorch).
 
-(2) Added testing codes, including classification and segmentation, and semantic segmentation with visualization. 
+If you use my re-implementation for your own work, please cite the original paper:
 
-(3) Organized all models into `./models` files for easy using.
-
-
-## Classification
-### Data Preparation
-Download alignment **ModelNet** [here](https://shapenet.cs.stanford.edu/media/modelnet40_normal_resampled.zip) and save in `data/modelnet40_normal_resampled/`.
-
-### Run
 ```
-## Check model in ./models 
-## E.g. pointnet2_msg
-python train_cls.py --model pointnet2_cls_msg --normal --log_dir pointnet2_cls_msg
-python test_cls.py --normal --log_dir pointnet2_cls_msg
+Qi, Charles R., et al. "Pointnet: Deep learning on point sets for 3d classification and segmentation." 
+Proc. Computer Vision and Pattern Recognition (CVPR), IEEE 1.2 (2017): 4.
 ```
 
-### Performance
-| Model | Accuracy |
-|--|--|
-| PointNet (Official) |  89.2|
-| PointNet2 (Official) | 91.9 |
-| PointNet (Pytorch without normal) |  90.6|
-| PointNet (Pytorch with normal) |  91.4|
-| PointNet2_SSG (Pytorch without normal) |  92.2|
-| PointNet2_SSG (Pytorch with normal) |  92.4|
-| PointNet2_MSG (Pytorch with normal) |  **92.8**|
 
-## Part Segmentation
-### Data Preparation
-Download alignment **ShapeNet** [here](https://shapenet.cs.stanford.edu/media/shapenetcore_partanno_segmentation_benchmark_v0_normal.zip)  and save in `data/shapenetcore_partanno_segmentation_benchmark_v0_normal/`.
-### Run
-```
-## Check model in ./models 
-## E.g. pointnet2_msg
-python train_partseg.py --model pointnet2_part_seg_msg --normal --log_dir pointnet2_part_seg_msg
-python test_partseg.py --normal --log_dir pointnet2_part_seg_msg
-```
-### Performance
-| Model | Inctance avg IoU| Class avg IoU 
-|--|--|--|
-|PointNet (Official)	|83.7|80.4	
-|PointNet2 (Official)|85.1	|81.9	
-|PointNet (Pytorch)|	84.3	|81.1|	
-|PointNet2_SSG (Pytorch)|	84.9|	81.8	
-|PointNet2_MSG (Pytorch)|	**85.4**|	**82.5**	
+---
+
+## Repo TO-DO's
+ * Finish segmentation implementation
+ * Upload the sampled ModelNet40 data
+ * Write up how-to section
 
 
-## Semantic Segmentation
-### Data Preparation
-Download 3D indoor parsing dataset (**S3DIS**) [here](http://buildingparser.stanford.edu/dataset.html)  and save in `data/Stanford3dDataset_v1.2_Aligned_Version/`.
-```
-cd data_utils
-python collect_indoor3d_data.py
-```
-Processed data will save in `data/stanford_indoor3d/`.
-### Run
-```
-## Check model in ./models 
-## E.g. pointnet2_ssg
-python train_semseg.py --model pointnet2_sem_seg --test_area 5 --log_dir pointnet2_sem_seg
-python test_semseg.py --log_dir pointnet2_sem_seg --test_area 5 --visual
-```
-Visualization results will save in `log/sem_seg/pointnet2_sem_seg/visual/` and you can visualize these .obj file by [MeshLab](http://www.meshlab.net/).
-### Performance on sub-points of raw dataset (processed by official PointNet [Link](https://shapenet.cs.stanford.edu/media/indoor3d_sem_seg_hdf5_data.zip))
-|Model  | Class avg IoU | 
-|--|--|
-| PointNet (Official) | 41.1|
-| PointNet (Pytorch) | 48.9|
-| PointNet2 (Official) |N/A | 
-| PointNet2_ssg (Pytorch) | **53.2**|
-### Performance on raw dataset
-still on testing...
-
-## Visualization
-### Using show3d_balls.py
-```
-## build C++ code for visualization
-cd visualizer
-bash build.sh 
-## run one example 
-python show3d_balls.py
-```
-![](/visualizer/pic.png)
-### Using MeshLab
-![](/visualizer/pic2.png)
+---
 
 
-## Reference By
-[halimacc/pointnet3](https://github.com/halimacc/pointnet3)<br>
-[fxia22/pointnet.pytorch](https://github.com/fxia22/pointnet.pytorch)<br>
-[charlesq34/PointNet](https://github.com/charlesq34/pointnet) <br>
-[charlesq34/PointNet++](https://github.com/charlesq34/pointnet2)
+## Classification Results
 
-## Environments
-Ubuntu 16.04 <br>
-Python 3.6.7 <br>
-Pytorch 1.1.0
+The pre-trained classifier model included in this repository was trained for 60 epochs with a batch size of 32 on a 2000-point-per-model sampling of ModelNet40.
+
+#### Here is an graph showing the training loss over 60 epochs:
+
+![classifier_training_loss](img/classification_training_loss.png)
+
+
+#### Below are the accuracy results for the included classifier model on the test set
+
+| Overall Accuracy |
+| :---: |
+| 0.852917 |
+
+
+
+| Dresser | Chair | Piano | Keyboard | Tent | Wardrobe | Bookshelf | Bed |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 0.76 | 0.95 |0.83 | 0.90 | 1.00 | 0.65 | 0.95 | 0.92 |
+
+| XBox | Vase | Table | Flower Pot | Cup | Glass Box | Night Stand | Sink |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 0.70 | 0.81 |0.70 | 0.00 | 0.45 | 0.89 | 0.66 | 0.65 |
+
+| Laptop | Airplane | Curtain | Range Hood | Stairs | Door | Radio | Bowl |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 0.95 | 0.99 |0.80 | 0.91 | 0.65 | 0.85 | 0.70 | 1.00 |
+
+| Toilet | Plant | Monitor | Lamp | Mantle | TV Stand | Car | Cone |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 0.88 | 0.89 |0.94 | 0.75 | 0.89 | 0.79 | 0.91 | 0.85 |
+
+
+| Bathtub | Bottle | Person | Stool | Bench | Guitar | Sofa | Desk |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 0.82 | 0.96 | 0.85 | 0.60 | 0.85 | 0.91 | 0.97 | 0.80 |
+
+
